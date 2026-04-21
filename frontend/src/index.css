@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "-apple-system", "BlinkMacSystemFont", "San Francisco", "Roboto", "Segoe UI", "Helvetica Neue", "sans-serif";
+  --color-glass-bg: rgba(255, 255, 255, 0.4);
+  --color-glass-border: rgba(255, 255, 255, 0.2);
+}
+
+@layer base {
+  body {
+    @apply antialiased text-gray-800 bg-gray-50;
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-glass-bg backdrop-blur-xl border border-glass-border shadow-[0_8px_32px_rgba(0,0,0,0.1)];
+  }
+  .glass-dark {
+    @apply bg-gray-900/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)];
+  }
+}
