@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Heart, Share2, MessageCircle, X, Send } from 'lucide-react';
+import { Heart, Share2, MessageCircle, X, Send } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '../supabaseClient';
 

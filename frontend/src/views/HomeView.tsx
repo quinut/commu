@@ -40,7 +40,7 @@ export default function HomeView() {
 
     // 3. Subscription to visitors increment
     const visitSub = supabase.channel('home_visit')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'daily_visits' }, payload => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'daily_visits' }, () => {
         // Just refetch or manually update when any visit date changes (mostly today)
         fetchStats();
       })
@@ -48,10 +48,10 @@ export default function HomeView() {
 
     // 4. Subscription to new posts
     const postSub = supabase.channel('home_post')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, payload => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, () => {
         setPostsCount(prev => prev + 1);
       })
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, payload => {
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, () => {
         setPostsCount(prev => Math.max(0, prev - 1));
       })
       .subscribe();
