@@ -103,11 +103,7 @@ export default function BoardView({ user }: { user?: User | null }) {
 
     const newPost = {
       title: draftTitle,
-      content: draftContent,
-      author_id: user.id,
-      author_name: getMyAuthorName(),
-      author_avatar: getMyAuthorAvatar(),
-      likes: 0
+      content: draftContent
     };
 
     setIsWriting(false);
@@ -117,17 +113,7 @@ export default function BoardView({ user }: { user?: User | null }) {
     await supabase.from('posts').insert([newPost]);
   };
 
-  const notifyUser = async (targetUserId: string, type: string, postId: number, message: string) => {
-    if (!user || user.id === targetUserId) return; // Don't notify self
-    await supabase.from('notifications').insert([{
-      target_user_id: targetUserId,
-      actor_name: getMyAuthorName(),
-      actor_avatar: getMyAuthorAvatar(),
-      activity_type: type,
-      post_id: postId,
-      message: message
-    }]);
-  };
+  // notifyUser removed; handled securely by backend triggers
 
   const handleLike = async (post: Post) => {
     if (!user) return alert("로그인이 필요합니다.");
@@ -146,30 +132,20 @@ export default function BoardView({ user }: { user?: User | null }) {
     if (isLiked) {
       await supabase.from('post_likes').delete().eq('post_id', post.id).eq('user_id', user.id);
     } else {
-      const { error } = await supabase.from('post_likes').insert([{ post_id: post.id, user_id: user.id }]);
-      if (!error && post.author_id) {
-        notifyUser(post.author_id, 'like', post.id, post.title);
-      }
+      await supabase.from('post_likes').insert([{ post_id: post.id, user_id: user.id }]);
     }
-
-    // Update count in post
-    await supabase.from('posts').update({ likes: newCount }).eq('id', post.id);
+    // Update count is efficiently handled by backend trigger now.
   };
 
   const handleShareToChat = async (post: Post) => {
     if (!user) return alert("로그인이 필요합니다.");
     const summary = `📢 [게시판 공유] ${post.title}\n"${post.content.slice(0, 30)}..." - by ${post.author_name}`;
     const { error } = await supabase.from('chat_messages').insert([{
-      text: summary,
-      is_system: true,
-      author_id: user.id,
-      author_name: getMyAuthorName(),
-      author_avatar: getMyAuthorAvatar()
+      text: summary
     }]);
 
     if (!error) {
       alert('실시간 채팅에 공유되었습니다!');
-      if (post.author_id) notifyUser(post.author_id, 'share', post.id, post.title);
     }
   };
 
@@ -195,24 +171,14 @@ export default function BoardView({ user }: { user?: User | null }) {
     const newComment = {
       post_id: activePost.id,
       content: finalContent,
-      author_id: user.id,
-      author_name: getMyAuthorName(),
-      author_avatar: getMyAuthorAvatar(),
       mentions: mentionsText
     };
 
     setCommentInput('');
     setReplyTarget(null);
 
-    const { data: inserted } = await supabase.from('comments').insert([newComment]).select().single();
-
-    if (inserted) {
-      if (mentionedUserId) {
-        notifyUser(mentionedUserId, 'mention', activePost.id, finalContent);
-      } else if (activePost.author_id) {
-        notifyUser(activePost.author_id, 'comment', activePost.id, finalContent);
-      }
-    }
+    await supabase.from('comments').insert([newComment]);
+    // Notification logic safely handled via backend trigger
   };
 
   const initReply = (c: Comment) => {

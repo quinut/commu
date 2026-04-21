@@ -67,20 +67,8 @@ export default function ChatView({ user }: { user?: User | null }) {
       return;
     }
 
-    const meta = user.user_metadata || {};
-    const name = meta.nickname || meta.full_name || '새 유저';
-    const avatar = meta.avatar_url || meta.picture || 'https://api.dicebear.com/7.x/avataaars/svg?seed=user';
-
-    const newMessage = {
-      text: input,
-      is_system: false,
-      author_id: user.id,
-      author_name: name,
-      author_avatar: avatar
-    };
-    
     setInput('');
-    const { error } = await supabase.from('chat_messages').insert([newMessage]);
+    const { error } = await supabase.from('chat_messages').insert([{ text: input }]);
     if (error) {
       console.error('Send error:', error);
       alert('메시지 전송에 실패했습니다.');
